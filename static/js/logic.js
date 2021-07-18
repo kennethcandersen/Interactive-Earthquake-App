@@ -6,11 +6,12 @@ var quakeUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_da
 
 function getColor(d) {
   return d > 90 ? '#d73027' :
-          d > 70  ? '#fc8d59' :
-          d > 50   ? '#fee08b' :
-          d > 30   ? '#d9ef8b' :
-          d > -10   ? '#91cf60' :
-                    '#1a9850';
+    d > 70 ? '#fc8d59' :
+      d > 50 ? '#fee08b' :
+        d > 30 ? '#ffffbf' :
+          d > 10 ? '#d9ef8b' :
+            d > -10 ? '#91cf60' :
+              '#1a9850';
 }
 
 // Perform a GET request to the query URL
@@ -26,7 +27,9 @@ function createFeatures(earthquakeData) {
   // Give each feature a popup describing the place and time of the earthquake
   function onEachFeature(feature, layer) {
     layer.bindPopup("<h3>" + feature.properties.place +
-      "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
+      "</h3><hr><p>" + new Date(feature.properties.time) + "</p>" +
+      "<p>Magnitude: " + feature.properties.mag + " RS</p>" +
+      "<p>Depth: " + feature.geometry.coordinates[2] + " KM</p>");
   }
 
   // Create a GeoJSON layer containing the features array on the earthquakeData object
@@ -85,17 +88,17 @@ function createMap(earthquakes) {
     "Grayscale": grayscale,
     "Outdoors": outdoors
   };
-  
+
   var plates = new L.LayerGroup();
   d3.json("static/data/plate_boundaries.geojson").then(function (data) {
     // Creating a GeoJSON layer with the retrieved data
     L.geoJson(data, {
-      color:'#d73027',
+      color: '#d73027',
       weight: 1
 
     })
-    
-    .addTo(plates);
+
+      .addTo(plates);
   });
 
   // Create overlay object to hold our overlay layer
@@ -114,36 +117,31 @@ function createMap(earthquakes) {
     layers: [satellite, earthquakes, plates]
   });
 
+
+  var legend = new L.control({ position: 'bottomright' });
+
+  legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+      grades = [-10, 10, 30, 50, 70, 90],
+      labels = [];
+    div.innerHTML = '<h5> Earthquake <br>Depth (Km):</h5>'
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+      div.innerHTML +=
+        '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+        grades[i] + (grades[i + 1] ? ' &ndash; ' + grades[i + 1] + '<br>' : '+');
+    }
+    console.log(getColor(grades[i] + 1))
+    return div;
+  };
+
+  legend.addTo(myMap);
+
   // Create a layer control
   // Pass in our baseMaps and overlayMaps
   // Add the layer control to the map
   L.control.layers(baseMaps, overlayMaps, {
     collapsed: false
   }).addTo(myMap);
-
-  // Plug Legend in here (legend.onAdd)
-
-  var legend = new L.control({position: 'bottomright'});
-
-legend.onAdd = function (map) {
-
-  var div = L.DomUtil.create('div', 'info legend'),
-      grades = [0, 100, 200, 300, 400, 500, 600, 700],
-      labels = [];
-
-
-  // loop through our density intervals and generate a label with a colored square for each interval
-  for (var i = 0; i < grades.length; i++) {
-      div.innerHTML +=
-          '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-          grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-      }
-
-      return div;
-  };
-
-  legend.addTo(myMap);
-
 };
-
-
