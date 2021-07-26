@@ -6,7 +6,7 @@
 
 This map allows users to see earthquakes detected in the last 7 days by the USGS. 
 
-See it live [here](hhttps://kennethcandersen.github.io/leaflet-challenge/): https://kennethcandersen.github.io/leaflet-challenge/
+See it live [here](https://kennethcandersen.github.io/Interactive-Earthquake-App/): https://kennethcandersen.github.io/Interactive-Earthquake-App/
 
 **REPOSITORY NAVIGATION**
 
